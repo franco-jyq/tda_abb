@@ -109,14 +109,13 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     // si tiene un solo hijo
     if ((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
         int integrer = arbol->cmp(padre->clave, elemento->clave);
-        nodo_abb_t* direccion_padre;
-        if(integrer < 0) direccion_padre = padre->der; // el padre es menor al hijo
-        if(integrer > 0) direccion_padre = padre->izq; // el padre es mayor al hijo
         if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
-            direccion_padre = elemento->izq;     
+            if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
+            if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
         }
         if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
-            direccion_padre = elemento->der;
+            if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
+            if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
         }
     }
     // si tiene dos hijos
