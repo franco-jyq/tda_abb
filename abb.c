@@ -5,11 +5,11 @@
 typedef struct nodo_abb {
     struct nodo_abb* izq;
     struct nodo_abb* der;
-    char* clave;
+    const char* clave;
     void* dato;
 }nodo_abb_t;
 
-nodo_abb_t* nodo_abb_crear(char* clave, char* dato){
+nodo_abb_t* nodo_abb_crear(const char* clave, char* dato){
     nodo_abb_t* nodo = malloc(sizeof(nodo_abb_t));
     if(!nodo) return NULL;
     nodo->clave = clave;
@@ -40,9 +40,9 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato){
     return abb;
 }
 
-bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_abb_t** nodo){
+bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_abb_t* nodo){
     if(!actual){
-        *actual = nodo;
+        actual = nodo;
         return true;
     }
     int integrer = arbol->cmp(clave, actual->clave);
@@ -66,7 +66,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
         arbol->cant ++;
         return true;
     }
-    if(!wrapper_guardar(arbol, arbol->raiz, clave, &nodo)){ //si ya estaba el elemento 
+    if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ //si ya estaba el elemento 
         free(nodo);
         return false;
     }
@@ -76,25 +76,25 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 
 void buscar_elemento(abb_t* arbol, nodo_abb_t* actual , const char* clave, nodo_abb_t** padre, nodo_abb_t** elemento){
     if (!actual){
-        return NULL;
+        return;
     }
     int integrer = arbol->cmp(clave, actual->clave);
     if (integrer < 0){
         // es menor llamamos para la izq;
         *padre = actual;
-        buscar_elemento(arbol, actual->izq, clave, &padre, &elemento);
+        buscar_elemento(arbol, actual->izq, clave, padre, elemento);
     }
     if (integrer > 0){
         // es mayor llamamos para la der;
-        *padre = arbol;
-        buscar_elemento(arbol, actual->der, clave, &padre, &elemento);
+        *padre = actual;
+        buscar_elemento(arbol, actual->der, clave, padre, elemento);
     }
     // si llego aca es porq encontre el elemento
     *elemento = actual;
 }
 
 nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
-    nodo_abb_t* actual = actual->der;
+    actual = actual->der;
     while(actual->izq){
         actual = actual->izq;
     }
@@ -122,7 +122,7 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     // si tiene dos hijos
     if(elemento->izq && elemento->der){
         nodo_abb_t* reemplazante =  buscar_reemplazante(elemento); // busco un reemplazante
-        char* nueva_clave = reemplazante->clave;                         // me guardo la clave
+        const char* nueva_clave = reemplazante->clave;                         // me guardo la clave
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
         elemento->dato = valor;                                   // piso el valor del elemento

@@ -1,5 +1,7 @@
 #ifndef ABB_H
 #define ABB_H
+#include<stdbool.h>
+#include <stddef.h>
 
 /*Definicion del struct del abb*/
 typedef struct abb abb_t;
