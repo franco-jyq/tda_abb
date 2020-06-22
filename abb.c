@@ -131,3 +131,25 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     arbol->cant -- ;
     return dato;
 }
+
+/**/
+void *abb_obtener(const abb_t *arbol, const char *clave){
+    return NULL;
+}
+
+/**/
+bool abb_pertenece(const abb_t *arbol, const char *clave){
+    return false;
+}
+
+/**/
+size_t abb_cantidad(abb_t *arbol){
+    return arbol->cant;
+}
+
+/**/
+void abb_destruir(abb_t *arbol){
+    free(arbol);
+}
+
+
