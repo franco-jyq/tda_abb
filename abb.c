@@ -10,7 +10,7 @@ typedef struct nodo_abb {
     void* dato;
 }nodo_abb_t;
 
-nodo_abb_t* nodo_abb_crear(const char* clave, char* dato){
+nodo_abb_t* nodo_abb_crear(char* clave, char* dato){
     nodo_abb_t* nodo = malloc(sizeof(nodo_abb_t));
     if(!nodo) return NULL;
     nodo->clave = clave;
@@ -54,13 +54,15 @@ bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_a
     if (integrer > 0){   
         wrapper_guardar(arbol, actual->der, clave, nodo);
     }
+    if (arbol->destruir) arbol->destruir(actual->dato);   
+    actual->dato = nodo->dato; 
     return false;
 }
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
     char* copia_clave = malloc(sizeof(char)*(strlen(clave)+1));
     if (!copia_clave) return false;
-    nodo_abb_t* nodo = nodo_abb_crear(clave, dato);
+    nodo_abb_t* nodo = nodo_abb_crear(copia_clave, dato);
     if(!nodo){
         free(copia_clave);
         return false;
@@ -70,15 +72,15 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
         arbol->cant ++;
         return true;
     }
-    if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ //si ya estaba el elemento 
+    if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ 
         nodo_abb_destruir(nodo);
-        return false;
+        return true;
     }
     arbol->cant ++;
     return true;
 }
 
-void buscar_elemento(abb_t* arbol, nodo_abb_t* actual , const char* clave, nodo_abb_t** padre, nodo_abb_t** elemento){
+void buscar_elemento(const abb_t* arbol, nodo_abb_t* actual , const char* clave, nodo_abb_t** padre, nodo_abb_t** elemento){
     if (!actual){
         return;
     }
@@ -108,42 +110,50 @@ nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
 void* abb_borrar(abb_t* arbol, const char *clave){
     nodo_abb_t* padre = NULL;
     nodo_abb_t* elemento = NULL;
-    void* dato = elemento->dato;
     buscar_elemento(arbol, arbol->raiz, clave, &padre, &elemento);
+    if (!elemento) return NULL; // devuelve NULL si no esta
+    void* dato = elemento->dato;
     // si tiene un solo hijo
-    if ((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
-        int integrer = arbol->cmp(padre->clave, elemento->clave);
-        if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
-            if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
-            if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
-        }
-        if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
-            if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
-            if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
-        }
+    int integrer = arbol->cmp(padre->clave, elemento->clave);
+    if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
+        if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
+        if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
     }
+    if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
+        if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
+        if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
+    }    
     // si tiene dos hijos
     if(elemento->izq && elemento->der){
         nodo_abb_t* reemplazante =  buscar_reemplazante(elemento); // busco un reemplazante
-        const char* nueva_clave = reemplazante->clave;                         // me guardo la clave
+        char* nueva_clave = reemplazante->clave;                         // me guardo la clave
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
         elemento->dato = valor;                                   // piso el valor del elemento
     }
+    else {
+        nodo_abb_destruir(elemento); // sino va a destruir el elemento (no tiene que hacerlo aca)
+    }
     //destryo el nodo y devuelvo el elemento (si llega aca y no pasa por los ifs  es porque no hay hijos)
-    nodo_abb_destruir(elemento);
     arbol->cant -- ;
     return dato;
 }
 
 /**/
 void *abb_obtener(const abb_t *arbol, const char *clave){
+    nodo_abb_t* elemento = NULL;
+    nodo_abb_t* padre = NULL;
+    buscar_elemento(arbol,arbol->raiz ,clave,&padre,&elemento);
+    if(elemento) return elemento->dato;
     return NULL;
 }
 
 /**/
 bool abb_pertenece(const abb_t *arbol, const char *clave){
-    return false;
+    nodo_abb_t* elemento = NULL;
+    nodo_abb_t* padre = NULL;
+    buscar_elemento(arbol,arbol->raiz ,clave,&padre,&elemento);
+    return elemento != NULL;
 }
 
 /**/
@@ -151,8 +161,17 @@ size_t abb_cantidad(abb_t *arbol){
     return arbol->cant;
 }
 
+void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){ // wrapper
+    if (!actual) return;
+    _abb_destruir(arbol,actual->izq);
+    _abb_destruir(arbol,actual->der);
+    if (arbol->destruir) arbol->destruir(actual->dato);
+    nodo_abb_destruir(actual);
+}
+
 /**/
 void abb_destruir(abb_t *arbol){
+    _abb_destruir(arbol,arbol->raiz);
     free(arbol);
 }
 
