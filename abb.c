@@ -78,7 +78,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
     }
     if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ 
         nodo_abb_destruir(nodo);
-        return true;
+        //return true;  no aumentaba la cantidad
     }
     arbol->cant ++;
     return true;
@@ -136,7 +136,7 @@ void* abb_borrar(abb_t* arbol, const char *clave){
         elemento->dato = valor;                                          // piso el valor del elemento
     }
     else {
-        nodo_abb_destruir(elemento); // sino va a destruir el elemento (no tiene que hacerlo aca)
+        nodo_abb_destruir(elemento); // si no va a destruir el elemento (no tiene que hacerlo aca)
     }
     //destryo el nodo y devuelvo el elemento (si llega aca y no pasa por los ifs  es porque no hay hijos)
     arbol->cant -- ;
@@ -169,7 +169,6 @@ void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){ // wrapper
     if (arbol->destruir) arbol->destruir(actual->dato);
     nodo_abb_destruir(actual);
 }
-
 
 void abb_destruir(abb_t *arbol){
     _abb_destruir(arbol,arbol->raiz);
