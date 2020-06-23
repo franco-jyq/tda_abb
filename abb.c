@@ -1,6 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
 #include "abb.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
+#include <stdio.h>
 #include <string.h>
 
 typedef struct nodo_abb {
@@ -60,7 +63,8 @@ bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_a
 }
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
-    char* copia_clave = malloc(sizeof(char)*(strlen(clave)+1));
+    //char* copia_clave = malloc(sizeof(char)*(strlen(clave)+1));
+    char* copia_clave = strdup(clave);
     if (!copia_clave) return false;
     nodo_abb_t* nodo = nodo_abb_crear(copia_clave, dato);
     if(!nodo){
@@ -125,11 +129,11 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     }    
     // si tiene dos hijos
     if(elemento->izq && elemento->der){
-        nodo_abb_t* reemplazante =  buscar_reemplazante(elemento); // busco un reemplazante
+        nodo_abb_t* reemplazante =  buscar_reemplazante(elemento);       // busco un reemplazante
         char* nueva_clave = reemplazante->clave;                         // me guardo la clave
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
-        elemento->dato = valor;                                   // piso el valor del elemento
+        elemento->dato = valor;                                          // piso el valor del elemento
     }
     else {
         nodo_abb_destruir(elemento); // sino va a destruir el elemento (no tiene que hacerlo aca)
@@ -139,7 +143,6 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     return dato;
 }
 
-/**/
 void *abb_obtener(const abb_t *arbol, const char *clave){
     nodo_abb_t* elemento = NULL;
     nodo_abb_t* padre = NULL;
@@ -148,15 +151,13 @@ void *abb_obtener(const abb_t *arbol, const char *clave){
     return NULL;
 }
 
-/**/
 bool abb_pertenece(const abb_t *arbol, const char *clave){
     nodo_abb_t* elemento = NULL;
-    nodo_abb_t* padre = NULL;
-    buscar_elemento(arbol,arbol->raiz ,clave,&padre,&elemento);
+    nodo_abb_t* padre = NULL;   
+    buscar_elemento(arbol, arbol->raiz ,clave, &padre, &elemento);
     return elemento != NULL;
 }
 
-/**/
 size_t abb_cantidad(abb_t *arbol){
     return arbol->cant;
 }
@@ -169,7 +170,7 @@ void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){ // wrapper
     nodo_abb_destruir(actual);
 }
 
-/**/
+
 void abb_destruir(abb_t *arbol){
     _abb_destruir(arbol,arbol->raiz);
     free(arbol);
