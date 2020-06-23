@@ -1,11 +1,12 @@
 #include "abb.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 typedef struct nodo_abb {
     struct nodo_abb* izq;
     struct nodo_abb* der;
-    const char* clave;
+    char* clave;
     void* dato;
 }nodo_abb_t;
 
@@ -20,6 +21,7 @@ nodo_abb_t* nodo_abb_crear(const char* clave, char* dato){
 }
 
 void nodo_abb_destruir(nodo_abb_t* nodo){
+    free(nodo->clave);
     free(nodo);
 }
 
@@ -47,27 +49,29 @@ bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_a
     }
     int integrer = arbol->cmp(clave, actual->clave);
     if (integrer < 0){
-    //la clave es menor qe el actual, llamamos para la izq;
         wrapper_guardar(arbol, actual->izq, clave, nodo);
     }
-    if (integrer > 0){
-    //la clave es mayor que el actual llamamos para la der;
+    if (integrer > 0){   
         wrapper_guardar(arbol, actual->der, clave, nodo);
     }
-    // si llego aca es porq ya estaba el elemento
     return false;
 }
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
-    nodo_abb_t* nodo = nodo_abb_crear(clave, dato); // creo un nuevo nodo
-    if(!nodo) return false;                         
-    if(!arbol->raiz){                               //si no hay raiz
+    char* copia_clave = malloc(sizeof(char)*(strlen(clave)+1));
+    if (!copia_clave) return false;
+    nodo_abb_t* nodo = nodo_abb_crear(clave, dato);
+    if(!nodo){
+        free(copia_clave);
+        return false;
+    }                          
+    if(!arbol->raiz){                               
         arbol->raiz = nodo;
         arbol->cant ++;
         return true;
     }
     if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ //si ya estaba el elemento 
-        free(nodo);
+        nodo_abb_destruir(nodo);
         return false;
     }
     arbol->cant ++;
