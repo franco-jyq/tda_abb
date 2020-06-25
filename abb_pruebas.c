@@ -8,8 +8,7 @@ const char clave2[5] = "gato";
 const char clave3[5] = "vaca";
 #define DATO_1 1
 
-
-
+        
 void prueba_abb_vacio(){
     printf("INICIO PRUEBA ABB VACIO \n");
     abb_t* arbol = abb_crear(strcmp, NULL); 
@@ -49,10 +48,49 @@ void prueba_guardar_algunos_elementos(){
     abb_destruir(arbol);
 }
 
+void prueba_borrar_unitaria(){
+    printf("INICIO PRUEBA BORRAR UNITARIA \n");
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave1) == dato1);
+    print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave1) == false);
+    print_test("cantidad de elementos es  0", abb_cantidad(arbol) == 0);
+    abb_destruir(arbol);
+}
+
+void prueba_borrar_algunos_elementos(){
+    printf("INICIO PRUEBA BORRAR ALGUNOS ELEMENTOS \n");
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    int dato2 = 2;
+    int dato3 = 3;
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato2) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave3, &dato3) == true);
+    print_test("cantidad de elementos es 3", abb_cantidad(arbol) == 3);
+    /*borro el primer elemento*/
+    print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave1) == dato1);
+    print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave1) == false);
+    print_test("cantidad de elementos es  2", abb_cantidad(arbol) == 2);
+    /*borro el segundo elemento*/
+    print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave2) == dato2);
+    print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave2) == false);
+    print_test("cantidad de elementos es  1", abb_cantidad(arbol) == 1);
+    /*borro el tercer elemento*/
+    print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave3) == dato3);
+    print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave3) == false);
+    print_test("cantidad de elementos es  0", abb_cantidad(arbol) == 0);
+    /*destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
 void pruebas_abb_alumno(){
     printf("INICIO PRUEBAS ALUMNOS \n");
     prueba_abb_vacio();
     prueba_guardar_unitaria();
     prueba_guardar_algunos_elementos();
+    prueba_borrar_unitaria();
+    prueba_borrar_algunos_elementos();
 }
 

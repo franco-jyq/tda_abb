@@ -45,25 +45,29 @@ abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato){
     return abb;
 }
 
-bool wrapper_guardar(abb_t* arbol, nodo_abb_t* actual, const char* clave, nodo_abb_t* nodo){
-    if(!actual){
-        actual = nodo;
-        return true;
+void buscar_elemento(const abb_t* arbol, nodo_abb_t* actual , const char* clave, nodo_abb_t** padre, nodo_abb_t** elemento){
+    if (!actual){
+        *elemento = NULL;
+        return;
     }
     int integrer = arbol->cmp(clave, actual->clave);
-    if (integrer < 0){
-        wrapper_guardar(arbol, actual->izq, clave, nodo);
+    if (integrer < 0){ 
+        // es menor llamamos para la izq;
+        *padre = actual;
+        buscar_elemento(arbol, actual->izq, clave, padre, elemento);
     }
-    if (integrer > 0){   
-        wrapper_guardar(arbol, actual->der, clave, nodo);
+    if (integrer > 0){ 
+        // es mayor llamamos para la der;
+        *padre = actual;
+        buscar_elemento(arbol, actual->der, clave, padre, elemento);
     }
-    if (arbol->destruir) arbol->destruir(actual->dato);   
-    actual->dato = nodo->dato; 
-    return false;
+    // si llego aca es porq encontre el elemento
+    if(integrer == 0){
+        *elemento = actual;
+    }    
 }
 
 bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
-    //char* copia_clave = malloc(sizeof(char)*(strlen(clave)+1));
     char* copia_clave = strdup(clave);
     if (!copia_clave) return false;
     nodo_abb_t* nodo = nodo_abb_crear(copia_clave, dato);
@@ -76,32 +80,22 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
         arbol->cant ++;
         return true;
     }
-    if(!wrapper_guardar(arbol, arbol->raiz, clave, nodo)){ 
+    nodo_abb_t* padre = NULL;
+    nodo_abb_t* elemento = NULL;
+    buscar_elemento(arbol, arbol->raiz, clave, &padre, &elemento);
+    if(!elemento){
+        int integrer = arbol->cmp(padre->clave, clave);
+        if (integrer < 0) padre->der = nodo; // el padre es menor al hijo
+        if (integrer > 0) padre->izq = nodo; // el padre es mayor al hijo     
+    }
+    else{
+        elemento->dato = dato;
         nodo_abb_destruir(nodo);
-        //return true;  no aumentaba la cantidad
     }
     arbol->cant ++;
     return true;
 }
 
-void buscar_elemento(const abb_t* arbol, nodo_abb_t* actual , const char* clave, nodo_abb_t** padre, nodo_abb_t** elemento){
-    if (!actual){
-        return;
-    }
-    int integrer = arbol->cmp(clave, actual->clave);
-    if (integrer < 0){
-        // es menor llamamos para la izq;
-        *padre = actual;
-        buscar_elemento(arbol, actual->izq, clave, padre, elemento);
-    }
-    if (integrer > 0){
-        // es mayor llamamos para la der;
-        *padre = actual;
-        buscar_elemento(arbol, actual->der, clave, padre, elemento);
-    }
-    // si llego aca es porq encontre el elemento
-    *elemento = actual;
-}
 
 nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
     actual = actual->der;
@@ -112,33 +106,44 @@ nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
 }
 
 void* abb_borrar(abb_t* arbol, const char *clave){
+    //puts(arbol->raiz->clave);
     nodo_abb_t* padre = NULL;
     nodo_abb_t* elemento = NULL;
     buscar_elemento(arbol, arbol->raiz, clave, &padre, &elemento);
     if (!elemento) return NULL; // devuelve NULL si no esta
     void* dato = elemento->dato;
     // si tiene un solo hijo
-    int integrer = arbol->cmp(padre->clave, elemento->clave);
-    if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
-        if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
-        if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
-    }
-    if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
-        if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
-        if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
-    }    
+    if((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
+        int integrer = arbol->cmp(padre->clave, elemento->clave);
+        if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
+            if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
+            if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
+        }
+        if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
+            if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
+            if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
+        }
+    }        
     // si tiene dos hijos
     if(elemento->izq && elemento->der){
         nodo_abb_t* reemplazante =  buscar_reemplazante(elemento);       // busco un reemplazante
-        char* nueva_clave = reemplazante->clave;                         // me guardo la clave
+        char* nueva_clave = strdup(reemplazante->clave);                         // me guardo la clave)
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
+        free(elemento->clave);
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
         elemento->dato = valor;                                          // piso el valor del elemento
+        return dato;                                                     // devuelvo el dato aca porq si no resta la cantidad dos veces
     }
     else {
+        if(!padre) arbol->raiz = NULL; // si no hay padre es porque es la raiz
+        else{
+            int integrer = arbol->cmp(padre->clave, elemento->clave);
+            if (integrer < 0) padre->der = NULL; // el padre es menor al hijo
+            if (integrer > 0) padre->izq = NULL; // el padre es mayor al hijo
+        }
         nodo_abb_destruir(elemento); // si no va a destruir el elemento (no tiene que hacerlo aca)
     }
-    //destryo el nodo y devuelvo el elemento (si llega aca y no pasa por los ifs  es porque no hay hijos)
+    //destryo el nodo y devuelvo el elemento (si llega aca y no pasa por los ifs  es porque no hay hijos)   
     arbol->cant -- ;
     return dato;
 }
