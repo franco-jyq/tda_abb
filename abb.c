@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "abb.h"
+#include "pila.h"
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
@@ -106,7 +107,6 @@ nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
 }
 
 void* abb_borrar(abb_t* arbol, const char *clave){
-    //puts(arbol->raiz->clave);
     nodo_abb_t* padre = NULL;
     nodo_abb_t* elemento = NULL;
     buscar_elemento(arbol, arbol->raiz, clave, &padre, &elemento);
@@ -114,36 +114,51 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     void* dato = elemento->dato;
     // si tiene un solo hijo
     if((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
-        int integrer = arbol->cmp(padre->clave, elemento->clave);
-        if ((elemento->izq && !elemento->der)){  //el elemento solo tiene hijo izquierdo
-            if (integrer < 0) padre->der = elemento->izq; // el padre es menor al hijo
-            if (integrer > 0) padre->izq = elemento->izq; // el padre es mayor al hijo
+    
+        if ((elemento->izq && !elemento->der)){                         //el elemento solo tiene hijo izquierdo
+            
+            if(elemento == arbol->raiz){
+                arbol->raiz = elemento->izq;    // la nueva raiz sera el hijo izq
+                nodo_abb_destruir(elemento);  
+            }    
+            else{
+                int integrer = arbol->cmp(padre->clave, elemento->clave);
+                if (integrer < 0) padre->der = elemento->izq;           // el padre es menor al hijo
+                if (integrer > 0) padre->izq = elemento->izq;           // el padre es mayor al hijo
+            }
         }
-        if ((elemento->der && !elemento->izq)){  // el elemento solo tiene un hijo derecho
-            if (integrer < 0)padre->der = elemento->der; // el padre es menor al hijo
-            if (integrer > 0) padre->izq = elemento->der; //el padres es mayor al hijo
+        if ((elemento->der && !elemento->izq)){                         // el elemento solo tiene un hijo derecho
+            
+            if(elemento == arbol->raiz){
+                arbol->raiz = elemento->der;    // la nueva raiz sera el hijo der
+                nodo_abb_destruir(elemento);
+            }
+            else{
+                int integrer = arbol->cmp(padre->clave, elemento->clave);
+                if (integrer < 0)padre->der = elemento->der;            // el padre es menor al hijo
+                if (integrer > 0) padre->izq = elemento->der;           //el padres es mayor al hijo
+            }
         }
     }        
     // si tiene dos hijos
-    if(elemento->izq && elemento->der){
+    else if(elemento->izq && elemento->der){
         nodo_abb_t* reemplazante =  buscar_reemplazante(elemento);       // busco un reemplazante
         char* nueva_clave = strdup(reemplazante->clave);                         // me guardo la clave)
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
-        free(elemento->clave);
+        free(elemento->clave); 
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
         elemento->dato = valor;                                          // piso el valor del elemento
         return dato;                                                     // devuelvo el dato aca porq si no resta la cantidad dos veces
     }
     else {
-        if(!padre) arbol->raiz = NULL; // si no hay padre es porque es la raiz
+        if(!padre) arbol->raiz = NULL;                                   // si no hay padre es porque es la raiz
         else{
             int integrer = arbol->cmp(padre->clave, elemento->clave);
-            if (integrer < 0) padre->der = NULL; // el padre es menor al hijo
-            if (integrer > 0) padre->izq = NULL; // el padre es mayor al hijo
+            if (integrer < 0) padre->der = NULL;                         // el padre es menor al hijo
+            if (integrer > 0) padre->izq = NULL;                         // el padre es mayor al hijo
         }
-        nodo_abb_destruir(elemento); // si no va a destruir el elemento (no tiene que hacerlo aca)
+        nodo_abb_destruir(elemento);  
     }
-    //destryo el nodo y devuelvo el elemento (si llega aca y no pasa por los ifs  es porque no hay hijos)   
     arbol->cant -- ;
     return dato;
 }
@@ -179,5 +194,80 @@ void abb_destruir(abb_t *arbol){
     _abb_destruir(arbol,arbol->raiz);
     free(arbol);
 }
+
+void _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
+    if(!actual) return;
+    visitar(actual->clave, actual->dato, extra);
+    _abb_in_order(actual->izq, visitar, extra);
+    _abb_in_order(actual->der, visitar, extra);
+}
+
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra){
+    _abb_in_order(arbol->raiz, visitar, extra);
+}
+
+/*************************************************************************************
+ * 
+ *                                 Iterador Del Abb
+ * 
+ * ************************************************************************************/
+
+struct abb_iter{
+    const abb_t* abb;
+    pila_t* pila;
+};
+
+abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
+    abb_iter_t* abb_iter = malloc(sizeof(abb_iter_t));
+    if(!abb_iter) return NULL;
+    pila_t* pila = pila_crear();
+    if(!pila){
+        free(abb_iter);
+        return NULL;
+    }
+    if(arbol->raiz){        
+        nodo_abb_t* actual = arbol->raiz;
+        while(actual->izq){
+            pila_apilar(pila, actual);
+            actual = actual->izq;  
+        }
+        pila_apilar(pila, actual);
+    }
+    abb_iter->pila = pila;
+    abb_iter->abb = arbol;
+    return abb_iter;
+}
+
+bool abb_iter_in_avanzar(abb_iter_t *iter){
+    if(pila_esta_vacia(iter->pila)) return false;
+    nodo_abb_t* dato = pila_desapilar(iter->pila);
+    if(dato->der){
+        nodo_abb_t* actual = dato->der;
+        while(actual->izq){
+            pila_apilar(iter->pila, actual);
+            actual = actual->izq;
+        }         
+        pila_apilar(iter->pila, actual);
+    }
+    return true;
+}
+
+const char *abb_iter_in_ver_actual(const abb_iter_t *iter){
+    void* elemento = pila_ver_tope(iter->pila);
+    if(!elemento) return elemento;
+    nodo_abb_t* nodo = elemento;
+    return nodo->clave;
+}
+
+bool abb_iter_in_al_final(const abb_iter_t *iter){
+    return pila_esta_vacia(iter->pila);
+}
+
+void abb_iter_in_destruir(abb_iter_t* iter){
+    pila_destruir(iter->pila);
+    free(iter);
+}
+
+
 
 
