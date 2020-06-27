@@ -88,12 +88,12 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
         int integrer = arbol->cmp(padre->clave, clave);
         if (integrer < 0) padre->der = nodo; // el padre es menor al hijo
         if (integrer > 0) padre->izq = nodo; // el padre es mayor al hijo     
+        arbol->cant ++;
     }
     else{
         elemento->dato = dato;
         nodo_abb_destruir(nodo);
     }
-    arbol->cant ++;
     return true;
 }
 
@@ -119,7 +119,7 @@ void* abb_borrar(abb_t* arbol, const char *clave){
             
             if(elemento == arbol->raiz){
                 arbol->raiz = elemento->izq;    // la nueva raiz sera el hijo izq
-                nodo_abb_destruir(elemento);  
+                nodo_abb_destruir(elemento);
             }    
             else{
                 int integrer = arbol->cmp(padre->clave, elemento->clave);
@@ -155,7 +155,7 @@ void* abb_borrar(abb_t* arbol, const char *clave){
         else{
             int integrer = arbol->cmp(padre->clave, elemento->clave);
             if (integrer < 0) padre->der = NULL;                         // el padre es menor al hijo
-            if (integrer > 0) padre->izq = NULL;                         // el padre es mayor al hijo
+            if (integrer > 0) padre->izq = NULL;                        // el padre es mayor al hijo
         }
         nodo_abb_destruir(elemento);  
     }
@@ -267,6 +267,8 @@ void abb_iter_in_destruir(abb_iter_t* iter){
     pila_destruir(iter->pila);
     free(iter);
 }
+
+
 
 
 
