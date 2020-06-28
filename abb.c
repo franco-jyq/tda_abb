@@ -114,7 +114,6 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     void* dato = elemento->dato;
     // si tiene un solo hijo
     if((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
-    
         if ((elemento->izq && !elemento->der)){                         //el elemento solo tiene hijo izquierdo
             
             if(elemento == arbol->raiz){
@@ -125,10 +124,10 @@ void* abb_borrar(abb_t* arbol, const char *clave){
                 int integrer = arbol->cmp(padre->clave, elemento->clave);
                 if (integrer < 0) padre->der = elemento->izq;           // el padre es menor al hijo
                 if (integrer > 0) padre->izq = elemento->izq;           // el padre es mayor al hijo
+                nodo_abb_destruir(elemento);
             }
         }
-        if ((elemento->der && !elemento->izq)){                         // el elemento solo tiene un hijo derecho
-            
+        else if ((elemento->der && !elemento->izq)){                         // el elemento solo tiene un hijo derecho
             if(elemento == arbol->raiz){
                 arbol->raiz = elemento->der;    // la nueva raiz sera el hijo der
                 nodo_abb_destruir(elemento);
@@ -137,13 +136,14 @@ void* abb_borrar(abb_t* arbol, const char *clave){
                 int integrer = arbol->cmp(padre->clave, elemento->clave);
                 if (integrer < 0)padre->der = elemento->der;            // el padre es menor al hijo
                 if (integrer > 0) padre->izq = elemento->der;           //el padres es mayor al hijo
+                nodo_abb_destruir(elemento);
             }
         }
     }        
     // si tiene dos hijos
     else if(elemento->izq && elemento->der){
         nodo_abb_t* reemplazante =  buscar_reemplazante(elemento);       // busco un reemplazante
-        char* nueva_clave = strdup(reemplazante->clave);                         // me guardo la clave)
+        char* nueva_clave = strdup(reemplazante->clave);                 // me guardo la clave
         void* valor = abb_borrar(arbol, nueva_clave);                    // me guardo el valor y borro el reemplazante
         free(elemento->clave); 
         elemento->clave = nueva_clave;                                   // piso clave del elemento       
@@ -197,8 +197,8 @@ void abb_destruir(abb_t *arbol){
 
 void _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
     if(!actual) return;
-    visitar(actual->clave, actual->dato, extra);
     _abb_in_order(actual->izq, visitar, extra);
+    if(!visitar(actual->clave, actual->dato, extra)) return;
     _abb_in_order(actual->der, visitar, extra);
 }
 

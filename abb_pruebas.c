@@ -3,15 +3,14 @@
 #include "testing.h"
 #include "abb.h"
 #include<string.h>
-const char clave1[6] = "perro";
-const char clave2[5] = "gato";
-const char clave3[5] = "vaca";
-const char clave4[5] = "mono";
-const char clave5[5] = "pato";
-const char clave6[9] = "pinguino";
-const char clave7[6] = "zebra";
-
-
+const char* clave1 = "perro";
+const char* clave2 = "gato";
+const char* clave3 = "vaca";
+const char* clave4 = "mono";
+const char* clave5 = "pato";
+const char* clave6 = "pinguino";
+const char* clave7 = "zebra";
+const char* clave8 = "serpiente";
 
                 
 void prueba_abb_vacio(){
@@ -37,10 +36,13 @@ void prueba_guardar_unitaria(){
 
 void prueba_guardar_algunos_elementos(){
     printf("INICIO PRUEBA GUARDAR ALGUNOS ELEMENTOS \n");
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
     int dato1 = 1;
     int dato2 = 2;
     int dato3 = 3;
+
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
     print_test("la cantidad es 1", abb_cantidad(arbol) == 1);
     print_test("el elemento se encuentra en la estructura", abb_pertenece(arbol, clave1));
@@ -50,57 +52,238 @@ void prueba_guardar_algunos_elementos(){
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave3, &dato3) == true);
     print_test("la cantidad es 3", abb_cantidad(arbol) == 3);
     print_test("el elemento se encuentra en la estructura", abb_pertenece(arbol, clave3));
+    
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
-void prueba_borrar_unitaria(){
-    printf("INICIO PRUEBA BORRAR UNITARIA \n");
+void prueba_guardar_reemplazando(){
+    printf("INICIO PRUEBAS GUARDAR REEMPLAZANDO \n");
+    
+    /*inicalizo variables*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int valor1 = 1;
+    int valor2 = 2;
+    int valor3 = 3;
+    int valor4 = 4;
+    
+    /*guardo 4 valor*/
+    print_test("se guardo la clave1", abb_guardar(arbol, clave1, &valor1));
+    print_test("se guardo la clave2", abb_guardar(arbol, clave2, &valor2));
+    print_test("se guardo la clave3", abb_guardar(arbol, clave3, &valor3));
+    print_test("se guardo la clave4", abb_guardar(arbol, clave4, &valor4));
+    
+    /*reemplazo valor de clave 1*/
+    print_test("obtener de clave 1 es valor1", *(int*)abb_obtener(arbol, clave1) == valor1);
+    print_test("reemplazo el valor de la clave1", abb_guardar(arbol, clave1, &valor2));
+    print_test("obtener de clave 1 ahora es valor2", *(int*)abb_obtener(arbol, clave1) == valor2);
+    
+    /*reemplazo el valor de clave 4*/
+    print_test("obtener de clave4 es valor4", *(int*)abb_obtener(arbol, clave4) == valor4);
+    print_test("reemplazo el valor de la clave4", abb_guardar(arbol, clave4, &valor3));
+    print_test("obtener de clave 4 ahora es valor4", *(int*)abb_obtener(arbol, clave4) == valor3);
+    
+    /*Destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
+void prueba_borrar_raiz_sin_hijos(){
+    printf("INICIO PRUEBA BORRAR RAIZ SIN HIJOS \n");
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
     int dato1 = 1;
+
+    /*Pruebas*/
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
     print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave1) == dato1);
     print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave1) == false);
     print_test("cantidad de elementos es  0", abb_cantidad(arbol) == 0);
+    
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
-void prueba_borrar_escalera(){
-    printf("INICIO PRUEBA BORRAR ESCALERA \n");
+void prueba_borrar_raiz_con_dos_hijos(){
+    printf("INICIO PRUEBA BORRAR RAIZ CON DOS HIJOS \n");
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
     int dato1 = 1;
-    print_test("se pudo guardar el elemento", abb_guardar(arbol, "1", &dato1) == true);
-    print_test("se pudo guardar el elemento", abb_guardar(arbol, "2", &dato1) == true);
-    print_test("se pudo guardar el elemento", abb_guardar(arbol, "3", &dato1) == true);
-    print_test("se pudo guardar el elemento", abb_guardar(arbol, "4", &dato1) == true);
-    print_test("se pudo guardar el elemento", abb_guardar(arbol, "5", &dato1) == true);
-    print_test("se borro el elemento", abb_borrar(arbol, "1"));
+    
+    /*Guardo algunos elementos*/
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave3, &dato1) == true);
+    
+    /*Borro la raiz*/
+    print_test("se borro el valor1", abb_borrar(arbol, clave1));
+    print_test("el elemento ya no pertenece a la estructura", abb_pertenece(arbol, clave1) == false);
+    
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
+}
 
+void prueba_borrar_raiz_con_un_hijo(){
+    printf("INICIO PRUEBA BORRAR  RAIZ CON UN HIJO \n");
+    
+    /*Inicializo variables*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    
+    /*Guardo dos elementos*/
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato1) == true);
+    
+    /*Borro la raiz*/
+    print_test("se borro el valor1", abb_borrar(arbol, clave1));
+    print_test("el elemento ya no pertenece a la estructura", abb_pertenece(arbol, clave1) == false);
+    
+    /*Destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
+void prueba_borrar_sin_hijos(){
+    printf("INICIO PRUEBA BORRAR SIN HIJOS \n");
+    
+    /*Inicializo variables*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    
+    /*Guardo dos elementos*/
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato1) == true);
+    
+    /*Borro el elemento 2*/
+    print_test("se borro el valor2", abb_borrar(arbol, clave2));
+    print_test("el elemento ya no pertenece a la estructura", abb_pertenece(arbol, clave2) == false);
+    
+    /*Destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
+void prueba_borrar_con_un_hijo(){
+    printf("INICIO PRUEBA BORRAR CON UN HIJO \n");
+    
+    /*Inicializo variables*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    
+    /*Guardo tres elementos*/
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave4, &dato1) == true);
+    
+    /*Borro el elemento 2*/
+    print_test("se borro el valor2", abb_borrar(arbol, clave2));
+    print_test("el elemento ya no pertenece a la estructura", abb_pertenece(arbol, clave2) == false);
+    
+    /*Destuyo el arbol*/
+    abb_destruir(arbol);
+}
+
+void prueba_borrar_con_dos_hijos(){
+    printf("INICIO PRUEBA BORRAR CON DOS HIJOS \n");
+    
+    /*Incializo variables*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    int dato1 = 1;
+    
+    /*Guardo cuatro elementos*/
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave5, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave3, &dato1) == true);
+    print_test("se pudo guardar el elemento", abb_guardar(arbol, clave7, &dato1) == true);
+    
+    /*Borro el elemento 2*/
+    print_test("se borro el valor5", abb_borrar(arbol, clave5));
+    print_test("el elemento ya no pertenece a la estructura", abb_pertenece(arbol, clave2) == false);
+    
+    /*Destruyo el arbol*/
+    abb_destruir(arbol); 
 }
 
 void prueba_borrar_algunos_elementos(){
     printf("INICIO PRUEBA BORRAR ALGUNOS ELEMENTOS \n");
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
     int dato1 = 1;
     int dato2 = 2;
     int dato3 = 3;
+    
+    /*Guardo algunos elementos*/
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave1, &dato1) == true);
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave2, &dato2) == true);
     print_test("se pudo guardar el elemento", abb_guardar(arbol, clave3, &dato3) == true);
     print_test("cantidad de elementos es 3", abb_cantidad(arbol) == 3);
-    /*borro el primer elemento*/
+    
+    /*Borro el primer elemento*/
     print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave1) == dato1);
     print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave1) == false);
     print_test("cantidad de elementos es  2", abb_cantidad(arbol) == 2);
-    /*borro el segundo elemento*/
+    
+    /*Borro el segundo elemento*/
     print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave2) == dato2);
     print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave2) == false);
     print_test("cantidad de elementos es  1", abb_cantidad(arbol) == 1);
-    /*borro el tercer elemento*/
+    
+    /*Borro el tercer elemento*/
     print_test("se borro el elemento", *(int*)abb_borrar(arbol, clave3) == dato3);
     print_test("el elemento no pertence a la estructura", abb_pertenece(arbol, clave3) == false);
     print_test("cantidad de elementos es  0", abb_cantidad(arbol) == 0);
-    /*destruyo el arbol*/
+    
+    /*Destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
+bool visitar(const char* clave, void* dato, void* extra){
+    printf("clave: %s \n", clave);
+    return true;
+}
+
+bool visitar_con_extra(const char* clave, void* dato, void* extra){
+    (*(int*)extra) ++;
+    if(*(int*)extra > 4) return false;
+    printf("clave: %s \n", clave);
+    return true;
+}
+
+void prueba_abb_in_order(){
+    printf("INICIO PRUEBA ITERADOR INTERNO \n");
+
+    /*Creo el arbol*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    
+    /*Inicializo variables*/
+    int dato1 = 1;
+    int dato2 = 2;
+    int dato3 = 3;
+    int dato4 = 4;
+    int dato5 = 5;
+    int dato6 = 6;
+    int dato7 = 7;
+    int extra = 0;
+
+    /*Guardo 7 elementos*/
+    abb_guardar(arbol, clave1, &dato1);
+    abb_guardar(arbol, clave2, &dato2);
+    abb_guardar(arbol, clave3, &dato3);
+    abb_guardar(arbol, clave4, &dato4);
+    abb_guardar(arbol, clave5, &dato5);
+    abb_guardar(arbol, clave6, &dato6);
+    abb_guardar(arbol, clave7, &dato7); 
+     
+    /*Recorro in order*/
+    abb_in_order(arbol, visitar, NULL);
+    print_test("recorrido in order: gato-mono-pato-perro-pinguino-vaca-zebra ", true);
+
+
+    /*Recorro hasta el cuarto elemento*/    
+    abb_in_order(arbol, visitar_con_extra, &extra);
+    print_test("se recorrieron 4 elementos", true);
+
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
@@ -112,19 +295,28 @@ void prueba_borrar_algunos_elementos(){
 
 void prueba_iter_vacio(){
     printf("INICIO PRUEBAS ITERADOR EXTERNO \n");
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
     abb_iter_t* iter = abb_iter_in_crear(arbol);
+    
+    /*Pruebas*/
     print_test("se creo el iterador", iter!= NULL);
     print_test("avanzar si esta vacia es false", abb_iter_in_avanzar(iter) == false);
     print_test("ver actual si esta vacia es NULL", abb_iter_in_ver_actual(iter) == NULL);
     print_test("esta al final cuando esta vacio devuelve true", abb_iter_in_al_final(iter) == true);
+    
+    /*Destruyo el iterador*/
     abb_iter_in_destruir(iter);
+    
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
 void prueba_iter_algunos_elementos(){
+    
+    /*Inicializo variables*/
     abb_t* arbol = abb_crear(strcmp, NULL);
-    /*Guardo algunos elementos*/
     int dato1 = 1;
     int dato2 = 2;
     int dato3 = 3;
@@ -132,6 +324,8 @@ void prueba_iter_algunos_elementos(){
     int dato5 = 5;
     int dato6 = 6;
     int dato7 = 7;
+
+    /*Guardo 7 elemetnos*/
     abb_guardar(arbol, clave1, &dato1);
     abb_guardar(arbol, clave2, &dato2);
     abb_guardar(arbol, clave3, &dato3);
@@ -139,50 +333,68 @@ void prueba_iter_algunos_elementos(){
     abb_guardar(arbol, clave5, &dato5);
     abb_guardar(arbol, clave6, &dato6);
     abb_guardar(arbol, clave7, &dato7);    
+    
+    /*Creo el iterador*/
     abb_iter_t* iter = abb_iter_in_crear(arbol);
+    
+    /*Estoy en el primer elemento*/
     print_test("iter ver actual es clave2", strcmp(abb_iter_in_ver_actual(iter), clave2) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);
+    
     /*Ahora estoy en el segundo elemento*/
     print_test("iter ver actual es clave4", strcmp(abb_iter_in_ver_actual(iter), clave4) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);    
+    
     /*Ahora estoy en el tercer elemento*/
     print_test("iter ver actual es clave5", strcmp(abb_iter_in_ver_actual(iter), clave5) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);    
+    
     /*Ahora estoy en el cuarto elemento*/
     print_test("iter ver actual es clave1", strcmp(abb_iter_in_ver_actual(iter), clave1) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);    
+    
     /*Ahora estoy en el quinto elemento*/
     print_test("iter ver actual es clave6", strcmp(abb_iter_in_ver_actual(iter), clave6) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);
+    
     /*Ahora estoy en el sexto elemento*/
     print_test("iter ver actual es clave3", strcmp(abb_iter_in_ver_actual(iter), clave3) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);
+    
     /*Ahora estoy en el septimo elemento*/
     print_test("iter ver actual es clave7", strcmp(abb_iter_in_ver_actual(iter), clave7) == 0);
     print_test("iter al final es false", abb_iter_in_al_final(iter) == false);
     print_test("iter avanzar es true", abb_iter_in_avanzar(iter) == true);
+    
     /*Ahora estoy al final*/
     print_test("iter al final es true", abb_iter_in_al_final(iter) == true);
+    
     /*Destruyo el iterador*/
     abb_iter_in_destruir(iter);
+   
     /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
 void pruebas_abb_alumno(){
-    printf("INICIO PRUEBAS ALUMNOS \n");
     prueba_abb_vacio();
     prueba_guardar_unitaria();
     prueba_guardar_algunos_elementos();
-    prueba_borrar_unitaria();
-    prueba_borrar_escalera();
+    prueba_guardar_reemplazando();
+    prueba_borrar_raiz_sin_hijos();
+    prueba_borrar_raiz_con_dos_hijos();
+    prueba_borrar_raiz_con_un_hijo();
+    prueba_borrar_sin_hijos();
+    prueba_borrar_con_un_hijo();
+    prueba_borrar_con_dos_hijos();
     prueba_borrar_algunos_elementos();
+    prueba_abb_in_order();
     /*pruebas iterador externo*/
     prueba_iter_vacio();
     prueba_iter_algunos_elementos();
