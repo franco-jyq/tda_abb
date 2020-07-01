@@ -1,9 +1,9 @@
+#define _POSIX_C_SOURCE 200809L
 #include<stdio.h>
 #include<stdlib.h>
 #include "testing.h"
 #include "abb.h"
 #include<string.h>
-#include<time.h>
 const char* clave1 = "perro";
 const char* clave2 = "gato";
 const char* clave3 = "vaca";
@@ -309,7 +309,23 @@ void prueba_abb_volumen(int cantidad){
     /*Libero el arreglo*/
     free(arreglo);
     
-    /*Destruyo las cosas*/
+    /*Destruyo el arbol*/
+    abb_destruir(arbol);
+}
+
+void prueba_abb_destruir_con_funcion(){
+    
+    /*Creo el arbol*/
+    abb_t* arbol = abb_crear(strcmp, free);
+    
+    /*Inicializo variables*/
+    char* dato  = "example";
+    char* copia = strdup(dato);
+    
+    /*Guardamos clave valor*/
+    abb_guardar(arbol, clave1, copia);
+
+    /*Destruyo el arbol*/
     abb_destruir(arbol);
 }
 
@@ -422,6 +438,7 @@ void pruebas_abb_alumno(){
     prueba_borrar_algunos_elementos();
     prueba_abb_in_order();
     prueba_abb_volumen(5000);
+    prueba_abb_destruir_con_funcion();
     prueba_iter_vacio();
     prueba_iter_algunos_elementos();    
 }
