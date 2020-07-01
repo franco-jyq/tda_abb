@@ -3,6 +3,7 @@
 #include "testing.h"
 #include "abb.h"
 #include<string.h>
+#include<time.h>
 const char* clave1 = "perro";
 const char* clave2 = "gato";
 const char* clave3 = "vaca";
@@ -287,6 +288,31 @@ void prueba_abb_in_order(){
     abb_destruir(arbol);
 }
 
+void prueba_abb_volumen(int cantidad){
+    
+    /*Creo el arbol*/
+    abb_t* arbol = abb_crear(strcmp, NULL);
+    
+    /*Inicializo variables*/
+    char** arreglo = malloc(sizeof(char*) * cantidad);
+    int b[cantidad];
+
+    /*Guardamos 5000 veces con claves aleatorias*/
+    for(int i = 0; i < cantidad; i++){
+        int numero = rand() % 1000000;
+        char str[8];
+        sprintf(str, "%d", numero);
+        arreglo[i] = str;
+        abb_guardar(arbol, arreglo[i], b + i);  
+    }
+
+    /*Libero el arreglo*/
+    free(arreglo);
+    
+    /*Destruyo las cosas*/
+    abb_destruir(arbol);
+}
+
 /**********************************************************************************
  * 
  *                      Pruebas iterador externo
@@ -395,8 +421,8 @@ void pruebas_abb_alumno(){
     prueba_borrar_con_dos_hijos();
     prueba_borrar_algunos_elementos();
     prueba_abb_in_order();
-    /*pruebas iterador externo*/
+    prueba_abb_volumen(5000);
     prueba_iter_vacio();
-    prueba_iter_algunos_elementos();
+    prueba_iter_algunos_elementos();    
 }
 
