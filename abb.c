@@ -16,7 +16,7 @@ typedef struct nodo_abb {
 
 nodo_abb_t* nodo_abb_crear(char* clave, char* dato){
     nodo_abb_t* nodo = malloc(sizeof(nodo_abb_t));
-    if(!nodo) return NULL;
+    if (!nodo) return NULL;
     nodo->clave = clave;
     nodo->dato = dato;
     nodo->izq = NULL;
@@ -38,7 +38,7 @@ struct abb{
 
 abb_t* abb_crear(abb_comparar_clave_t cmp, abb_destruir_dato_t destruir_dato){
     abb_t* abb = malloc(sizeof(abb_t));
-    if(!abb)return NULL;
+    if (!abb)return NULL;
     abb->raiz = NULL;
     abb->cant = 0;
     abb->destruir = destruir_dato;
@@ -53,16 +53,13 @@ void buscar_elemento(const abb_t* arbol, nodo_abb_t* actual , const char* clave,
     }
     int integrer = arbol->cmp(clave, actual->clave);
     if (integrer < 0){ 
-        // es menor llamamos para la izq;
         *padre = actual;
         buscar_elemento(arbol, actual->izq, clave, padre, elemento);
     }
     if (integrer > 0){ 
-        // es mayor llamamos para la der;
         *padre = actual;
         buscar_elemento(arbol, actual->der, clave, padre, elemento);
     }
-    // si llego aca es porq encontre el elemento
     if(integrer == 0){
         *elemento = actual;
     }    
@@ -72,11 +69,11 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
     char* copia_clave = strdup(clave);
     if (!copia_clave) return false;
     nodo_abb_t* nodo = nodo_abb_crear(copia_clave, dato);
-    if(!nodo){
+    if (!nodo){
         free(copia_clave);
         return false;
     }                          
-    if(!arbol->raiz){                               
+    if (!arbol->raiz){                               
         arbol->raiz = nodo;
         arbol->cant ++;
         return true;
@@ -84,10 +81,10 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
     nodo_abb_t* padre = NULL;
     nodo_abb_t* elemento = NULL;
     buscar_elemento(arbol, arbol->raiz, clave, &padre, &elemento);
-    if(!elemento){
+    if (!elemento){
         int integrer = arbol->cmp(padre->clave, clave);
-        if (integrer < 0) padre->der = nodo; // el padre es menor al hijo
-        if (integrer > 0) padre->izq = nodo; // el padre es mayor al hijo     
+        if (integrer < 0) padre->der = nodo; 
+        if (integrer > 0) padre->izq = nodo;     
         arbol->cant ++;
     }
     else{
@@ -100,7 +97,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
 
 nodo_abb_t* buscar_reemplazante(nodo_abb_t* actual){
     actual = actual->der;
-    while(actual->izq){
+    while (actual->izq){
         actual = actual->izq;
     }
     return actual;
@@ -113,28 +110,28 @@ void* abb_borrar(abb_t* arbol, const char *clave){
     if (!elemento) return NULL; // devuelve NULL si no esta
     void* dato = elemento->dato;
     // si tiene un solo hijo
-    if((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
-        if ((elemento->izq && !elemento->der)){                         //el elemento solo tiene hijo izquierdo
+    if ((elemento->izq && !elemento->der) || (elemento->der && !elemento->izq)){
+        if (elemento->izq && !elemento->der){                         //el elemento solo tiene hijo izquierdo
             
-            if(elemento == arbol->raiz){
+            if (elemento == arbol->raiz){
                 arbol->raiz = elemento->izq;    // la nueva raiz sera el hijo izq
                 nodo_abb_destruir(elemento);
             }    
-            else{
+            else {
                 int integrer = arbol->cmp(padre->clave, elemento->clave);
                 if (integrer < 0) padre->der = elemento->izq;           // el padre es menor al hijo
                 if (integrer > 0) padre->izq = elemento->izq;           // el padre es mayor al hijo
                 nodo_abb_destruir(elemento);
             }
         }
-        else if ((elemento->der && !elemento->izq)){                         // el elemento solo tiene un hijo derecho
-            if(elemento == arbol->raiz){
+        else if (elemento->der && !elemento->izq){                         // el elemento solo tiene un hijo derecho
+            if (elemento == arbol->raiz){
                 arbol->raiz = elemento->der;    // la nueva raiz sera el hijo der
                 nodo_abb_destruir(elemento);
             }
-            else{
+            else {
                 int integrer = arbol->cmp(padre->clave, elemento->clave);
-                if (integrer < 0)padre->der = elemento->der;            // el padre es menor al hijo
+                if (integrer < 0) padre->der = elemento->der;            // el padre es menor al hijo
                 if (integrer > 0) padre->izq = elemento->der;           //el padres es mayor al hijo
                 nodo_abb_destruir(elemento);
             }
@@ -150,9 +147,9 @@ void* abb_borrar(abb_t* arbol, const char *clave){
         elemento->dato = valor;                                          // piso el valor del elemento
         return dato;                                                     // devuelvo el dato aca porq si no resta la cantidad dos veces
     }
-    else {
-        if(!padre) arbol->raiz = NULL;                                   // si no hay padre es porque es la raiz
-        else{
+    else { // Caso hoja
+        if (!padre) arbol->raiz = NULL;                                   // si no hay padre es porque es la raiz
+        else {
             int integrer = arbol->cmp(padre->clave, elemento->clave);
             if (integrer < 0) padre->der = NULL;                         // el padre es menor al hijo
             if (integrer > 0) padre->izq = NULL;                        // el padre es mayor al hijo
@@ -182,7 +179,7 @@ size_t abb_cantidad(abb_t *arbol){
     return arbol->cant;
 }
 
-void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){ // wrapper
+void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){ 
     if (!actual) return;
     _abb_destruir(arbol,actual->izq);
     _abb_destruir(arbol,actual->der);
@@ -196,9 +193,9 @@ void abb_destruir(abb_t *arbol){
 }
 
 void _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
-    if(!actual) return;
+    if (!actual) return;
     _abb_in_order(actual->izq, visitar, extra);
-    if(!visitar(actual->clave, actual->dato, extra)) return;
+    if (!visitar(actual->clave, actual->dato, extra)) return;
     _abb_in_order(actual->der, visitar, extra);
 }
 
@@ -219,15 +216,15 @@ struct abb_iter{
 
 abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
     abb_iter_t* abb_iter = malloc(sizeof(abb_iter_t));
-    if(!abb_iter) return NULL;
+    if (!abb_iter) return NULL;
     pila_t* pila = pila_crear();
-    if(!pila){
+    if (!pila){
         free(abb_iter);
         return NULL;
     }
-    if(arbol->raiz){        
+    if (arbol->raiz){        
         nodo_abb_t* actual = arbol->raiz;
-        while(actual->izq){
+        while (actual->izq){
             pila_apilar(pila, actual);
             actual = actual->izq;  
         }
@@ -239,11 +236,11 @@ abb_iter_t *abb_iter_in_crear(const abb_t *arbol){
 }
 
 bool abb_iter_in_avanzar(abb_iter_t *iter){
-    if(pila_esta_vacia(iter->pila)) return false;
+    if (pila_esta_vacia(iter->pila)) return false;
     nodo_abb_t* dato = pila_desapilar(iter->pila);
-    if(dato->der){
+    if (dato->der){
         nodo_abb_t* actual = dato->der;
-        while(actual->izq){
+        while (actual->izq){
             pila_apilar(iter->pila, actual);
             actual = actual->izq;
         }         
@@ -254,8 +251,8 @@ bool abb_iter_in_avanzar(abb_iter_t *iter){
 
 const char *abb_iter_in_ver_actual(const abb_iter_t *iter){
     void* elemento = pila_ver_tope(iter->pila);
-    if(!elemento) return elemento;
-    nodo_abb_t* nodo = elemento;
+    if (!elemento) return elemento;
+    nodo_abb_t* nodo = elemento; // esta linea me parece que esta demas
     return nodo->clave;
 }
 
