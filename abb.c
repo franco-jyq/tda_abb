@@ -88,6 +88,7 @@ bool abb_guardar(abb_t *arbol, const char *clave, void *dato){
         arbol->cant ++;
     }
     else{
+        if (arbol->destruir) arbol->destruir(elemento->dato);
         elemento->dato = dato;
         nodo_abb_destruir(nodo);
     }
@@ -190,7 +191,7 @@ void abb_destruir(abb_t *arbol){
 
 bool _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
     if (!actual) return true;
-    if (!_abb_in_order(actual->izq, visitar, extra)) return false ;
+    if (!_abb_in_order(actual->izq, visitar, extra)) return false;
     if (!visitar(actual->clave, actual->dato, extra)) return false;
     _abb_in_order(actual->der, visitar, extra);
     return true;

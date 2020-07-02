@@ -245,7 +245,7 @@ bool visitar(const char* clave, void* dato, void* extra){
 
 bool visitar_con_extra(const char* clave, void* dato, void* extra){
     (*(int*)extra) ++;
-    if(*(int*)extra > 4) return false;
+    if(*(int*)extra > 3) return false;
     printf("clave: %s \n", clave);
     return true;
 }
@@ -266,14 +266,21 @@ void prueba_abb_in_order(){
     int dato7 = 7;
     int extra = 0;
 
-    /*Guardo 7 elementos*/
+    /*Guardo 7 elementos
     abb_guardar(arbol, clave1, &dato1);
     abb_guardar(arbol, clave2, &dato2);
     abb_guardar(arbol, clave3, &dato3);
     abb_guardar(arbol, clave4, &dato4);
     abb_guardar(arbol, clave5, &dato5);
     abb_guardar(arbol, clave6, &dato6);
-    abb_guardar(arbol, clave7, &dato7); 
+    abb_guardar(arbol, clave7, &dato7); */
+    abb_guardar(arbol, "4", &dato1);
+    abb_guardar(arbol, "2", &dato2);
+    abb_guardar(arbol, "1", &dato3);
+    abb_guardar(arbol, "3", &dato4);
+    abb_guardar(arbol, "6", &dato5);
+    abb_guardar(arbol, "5", &dato6);
+    abb_guardar(arbol, "7", &dato7); 
      
     /*Recorro in order*/
     abb_in_order(arbol, visitar, NULL);
