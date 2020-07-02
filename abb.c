@@ -179,7 +179,7 @@ void _abb_destruir(abb_t* arbol,nodo_abb_t* actual){
     if (!actual) return;
     _abb_destruir(arbol,actual->izq);
     _abb_destruir(arbol,actual->der);
-    if (arbol->destruir) arbol->destruir(actual->dato);
+    if (arbol->destruir) arbol->destruir(actual->dato); 
     nodo_abb_destruir(actual);
 }
 
@@ -188,11 +188,12 @@ void abb_destruir(abb_t *arbol){
     free(arbol);
 }
 
-void _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
-    if (!actual) return;
-    _abb_in_order(actual->izq, visitar, extra);
-    if (!visitar(actual->clave, actual->dato, extra)) return;
+bool _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *), void *extra){
+    if (!actual) return true;
+    if (!_abb_in_order(actual->izq, visitar, extra)) return false ;
+    if (!visitar(actual->clave, actual->dato, extra)) return false;
     _abb_in_order(actual->der, visitar, extra);
+    return true;
 }
 
 void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra){

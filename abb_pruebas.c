@@ -279,7 +279,6 @@ void prueba_abb_in_order(){
     abb_in_order(arbol, visitar, NULL);
     print_test("Recorrido in order: gato-mono-pato-perro-pinguino-vaca-zebra ", true);
 
-
     /*Recorro hasta el cuarto elemento*/    
     abb_in_order(arbol, visitar_con_extra, &extra);
     print_test("Se recorrieron solo 4 elementos", true);
