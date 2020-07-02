@@ -193,7 +193,7 @@ bool _abb_in_order(nodo_abb_t* actual, bool visitar(const char *, void *, void *
     if (!actual) return true;
     if (!_abb_in_order(actual->izq, visitar, extra)) return false;
     if (!visitar(actual->clave, actual->dato, extra)) return false;
-    _abb_in_order(actual->der, visitar, extra);
+    if (!_abb_in_order(actual->der, visitar, extra)) return false;
     return true;
 }
 
